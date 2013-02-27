@@ -1,0 +1,6 @@
+*.pickle
+*.pyc
+.DS_Store
+.dropbox
+venv/
+
