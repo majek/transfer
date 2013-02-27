@@ -1,0 +1,7 @@
+#!./venv/bin/python
+
+import sys
+
+from transfer.fdraw import main
+
+main(sys.argv[1:])

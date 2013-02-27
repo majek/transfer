@@ -10,8 +10,10 @@ import pickle
 import itertools
 import random
 import os
+import math
 
 from . import const
+
 
 def _new_2h_net(window):
     net     = FeedForwardNetwork()
@@ -149,32 +151,10 @@ class Network(object):
             yield BackpropTrainer(self.net, ds)
 
 
-    # def train(self):
-    #     t0 = time.time()
-
-    #     # with open('f.pickle', 'w') as f:
-    #     #     f.write(pickle.dumps([(data, result[0]) for data,result in self.ds]))
-
-    #     trainer = BackpropTrainer(self.net, self.ds)
-    #     #print("[ ] untilconvergence....")
-    #     try:
-    #         pass
-    #         #trainer.trainUntilConvergence()
-    #     except KeyboardInterrupt:
-    #         pass
-    #     print("[ ] normaltraining....")
-    #     try:
-    #         for i in range(20):
-    #             t = trainer.train()
-    #             print("[ ] trained %f %f" % (t, self.sq_error()))
-    #     except KeyboardInterrupt:
-    #         pass
-    #     t1 = time.time()
-    #     return t1-t0
-
     def run(self, data):
         return self.net.activate(data)[0]
 
     def sq_error(self):
-        return sum( (r - self.run(data)) ** 2
-                    for data, r in self.samples )
+        sq_error = sum( (r - self.run(data)) ** 2
+                        for data, r in self.samples )
+        return math.sqrt(sq_error / len(self.samples))

@@ -51,15 +51,24 @@ def load_results(fullname, desired_size):
                                       (max(rows), max(cols))))
     return results
 
+
+def _draw_rectangle(l, r, fill=False, color=1.0):
+    if not fill:
+        for x in xrange(r.p1[0], r.p2[0]):
+            l[x, r.p1[1]] = color
+            l[x, r.p2[1]] = color
+        for y in xrange(r.p1[1], r.p2[1]+1):
+            l[r.p1[0], y] = color
+            l[r.p2[0], y] = color
+    else:
+        for x in xrange(r.p1[0], r.p2[0]+1):
+            for y in xrange(r.p1[1], r.p2[1]+1):
+                l[x, y] = color
+
 def results_to_rectangle_layer(size, results):
     l = layer.Layer(size)
     for r in results:
-        for x in xrange(r.p1[0], r.p2[0]):
-            l[x, r.p1[1]] = 1.0
-            l[x, r.p2[1]] = 1.0
-        for y in xrange(r.p1[1], r.p2[1]+1):
-            l[r.p1[0], y] = 1.0
-            l[r.p2[0], y] = 1.0
+        _draw_rectangle(l, r)
     return l
 
 
@@ -78,7 +87,8 @@ def _draw_thing(layer, (x, y), (width_x, width_y), (size_x, size_y), multiplier)
 
 def results_to_layer(size, results, multiplier=1.0):
     l = layer.Layer(size)
-    for result in results:
-        _draw_thing(l, result.centre, result.size, size, multiplier)
-        l[result.centre[0], result.centre[1]] = 1.
+    for r in results:
+        #_draw_rectangle(l, r, fill=True)
+        _draw_thing(l, r.centre, r.size, size, multiplier)
+        l[r.centre[0], r.centre[1]] = 1.
     return l

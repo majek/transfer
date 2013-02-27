@@ -1,0 +1,7 @@
+#!./venv/bin/python
+
+import sys
+
+from transfer.flearn import main
+
+main(sys.argv[1:])

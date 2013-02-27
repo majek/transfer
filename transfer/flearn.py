@@ -5,10 +5,9 @@ import array
 import itertools
 import os
 
-from . import network
 from . import extra as x
 from . import const
-
+from . import fnet
 
 def main(argv):
     parser = argparse.ArgumentParser(description='Train artificial neural network')
@@ -16,26 +15,21 @@ def main(argv):
                         help='pickle input files', )
     parser.add_argument('--network',
                         help='loaded and saved network')
-    parser.add_argument('--type', default='2h',
-                        help='type of network 1h 2h auto')
     opts = parser.parse_args(argv)
 
-    network_file = 'network.pickle'
+    network_filename = 'network.fann'
     if opts.network:
-        network_file = opts.network
+        network_filename = opts.network
 
     if opts.network and os.path.exists(opts.network):
         print "[+] Loading net from %r" % (opts.network,)
         loadingfile = opts.network
     else:
-        print "[+] No file %r" % (network_file,)
+        print "[+] No file %r" % (network_filename,)
         loadingfile = None
 
 
-    net = None
-    window = None
-
-    net = network.Network()
+    net = fnet.Network()
 
     print "[ ] Loading training data set"
     for inputfile in opts.input:
@@ -57,35 +51,14 @@ def main(argv):
                 for data, r in v[1]:
                     net.addSample(array.array('f', data), r)
             else:
-                x.FATAL('blah %r' % (v[0],))
-
+                x.FATAL('unknown key %r' % (v[0],))
     net.preset(window, ratio, size, multiplier)
     if not loadingfile:
-        net.new(opts.type)
+        net.new()
     else:
         net.load(loadingfile)
 
     print "[.] Training on %i datasets" % (len(net.samples),)
-    print "[.] Starting with sq_error=%.16f" % (net.sq_error()*1000.,)
-    try:
-        for chunk in (2**c for c in itertools.count(6)):
-            chunk = min(chunk, len(net.samples))
-            for trainer in net.batchedTrainers(chunk):
-                print "[-] New sub dataset of %i" % (chunk,)
-                trainer.trainUntilConvergence(maxEpochs=10*100)
-                # for i in range(10):
-                #     t = trainer.train()
-                t = trainer.train()
-                print("[ ] trained %.16f" % (t,))
-                t = trainer.train()
-                print("[ ] trained %.16f sq_error=%.16f" % (t, net.sq_error()*1000.))
-                net.save(network_file)
-    except KeyboardInterrupt:
-        pass
-    print "[+] saved"
-    net.save(network_file)
 
-
-
-if __name__ == "__main__":
-    main(sys.argv[1:])
+    net.train(network_filename)
+    print "[!] exit"
