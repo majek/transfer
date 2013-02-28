@@ -37,7 +37,7 @@ class Network(object):
         self.net.create_sparse_array(connection_rate,
                                      (num_input, num_hidden, num_output))
         self.net.set_learning_rate(learning_rate)
-        self.net.set_activation_function_output(libfann.SIGMOID_SYMMETRIC_STEPWISE)
+        self.net.set_activation_function_output(libfann.SIGMOID)
 
     def train(self, network_filename):
         tmpfile = 'fann.data'
@@ -49,10 +49,14 @@ class Network(object):
 
         print "[ ] learning"
         desired_error = 0.0001
-        max_iterations = 20
-        iterations_between_reports = 0
+        max_iterations = 80
+        iterations_between_reports = 4
+
+        max_iterations = 500
+        iterations_between_reports = 80
+
         td = 1.
-        while td >= 1.:
+        while td >= 0.5:
             t0 = time.time()
             try:
                 self.net.train_on_file(tmpfile,
