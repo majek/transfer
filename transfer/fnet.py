@@ -28,15 +28,17 @@ class Network(object):
 
     def new(self):
         self.net = libfann.neural_net()
-        connection_rate = 1
-        learning_rate = 0.7
         num_input = self.window*self.window*2+1
         num_hidden = self.window*self.window*2
         num_output = 1
 
-        self.net.create_sparse_array(connection_rate,
-                                     (num_input, num_hidden, num_output))
-        self.net.set_learning_rate(learning_rate)
+        self.net.create_standard_array((num_input, num_hidden, num_output))
+        self.net.randomize_weights(-1., 1.)
+        self._set_funs()
+
+    def _set_funs(self):
+        #self.net.set_activation_function_input(libfann.SIGMOID)
+        self.net.set_activation_function_hidden(libfann.SIGMOID)
         self.net.set_activation_function_output(libfann.SIGMOID)
 
     def train(self, network_filename):
@@ -52,8 +54,11 @@ class Network(object):
         max_iterations = 80
         iterations_between_reports = 4
 
-        max_iterations = 500
-        iterations_between_reports = 80
+        max_iterations = 100
+        iterations_between_reports = 10
+
+        sqe = self.sq_error()
+        print "[.] sq_errorr=%.16f" % (sqe*1000.,)
 
         td = 1.
         while td >= 0.5:
@@ -70,6 +75,8 @@ class Network(object):
             print "[.] done in %.3fsec sq_errorr=%.16f" % (td, sqe*1000.)
             self.save(network_filename)
 
+        sqe = self.sq_error()
+        print "[.] sq_errorr=%.16f" % (sqe*1000.,)
         self.save(network_filename)
         os.unlink(tmpfile)
 
@@ -132,6 +139,7 @@ class Network(object):
             f.write(network_data)
         self.net.create_from_file(tmpfile)
         os.unlink(tmpfile)
+        self._set_funs()
 
 
     def run(self, data):

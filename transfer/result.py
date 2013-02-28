@@ -110,8 +110,8 @@ def results_to_layer(size, results, multiplier=1.0):
     l = layer.Layer(size)
     for r in results:
         #_draw_rectangle(l, r, fill=True)
-        #_draw_thing(l, r.centre, r.size, size, multiplier)
-        _draw_thing_full(l, r.centre, r.size, size, multiplier)
+        _draw_thing(l, r.centre, r.size, size, multiplier)
+        #_draw_thing_full(l, r.centre, r.size, size, multiplier)
         #_draw_small_rectangle(l, r, fill=True, size=3)
         l[r.centre[0], r.centre[1]] = 1.
     return l

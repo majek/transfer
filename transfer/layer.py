@@ -1,6 +1,8 @@
 import itertools
 import array
+import sys
 import PIL.Image
+
 
 class Layer(object):
     def __init__(self, size, data=None):
@@ -28,6 +30,32 @@ class Layer(object):
 
 
     def bigger(self, extend):
+        '''
+        >>> l = Layer((1,1), [1.0])
+        >>> list(l.bigger((1,1)).a)
+        [0.0, 0.0, 0.0,
+         0.0, 1.0, 0.0,
+         0.0, 0.0, 0.0]
+        >>> l = Layer((2,1), [1.0, 2.0])
+        >>> list(l.a)
+        [1.0, 2.0]
+        >>> list(l.bigger((2,2)).a)
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 1.0, 2.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        >>> list(l.bigger((2,1)).a)
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 1.0, 2.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        >>> l = Layer((2,2), [1.0, 2.0, 3.0, 4.0])
+        >>> list(l.bigger((1,1)).a)
+        [0.0, 0.0, 0.0, 0.0,
+         0.0, 1.0, 2.0, 0.0,
+         0.0, 3.0, 4.0, 0.0,
+         0.0, 0.0, 0.0, 0.0]
+        '''
         (r, c) = extend
         a = array.array('f')
         for _ in xrange(c):
@@ -50,15 +78,65 @@ class Layer(object):
         return img
 
     def windows_fun(self, size):
+        '''
+        >>> l = Layer((1,1), [1.0])
+        >>> l[0,0]
+        1.0
+        >>> l.a[0]
+        1.0
+        >>> list(l.windows_fun(2)(0).a)
+        [0.0, 0.0,
+         0.0, 1.0]
+        >>> list(l.windows_fun(4)(0).a)
+        [0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 1.0, 0.0,
+         0.0, 0.0, 0.0, 0.0]
+        >>> l = Layer((2,1), [1.0, 2.0])
+        >>> list(l.windows_fun(2)(0).a)
+        [0.0, 0.0,
+         0.0, 1.0]
+        >>> list(l.windows_fun(2)(1).a)
+        [0.0, 0.0,
+         1.0, 2.0]
+        >>> l = Layer((1,2), [1.0, 2.0])
+        >>> list(l.windows_fun(2)(0).a)
+        [0.0, 0.0,
+         0.0, 1.0]
+        >>> list(l.windows_fun(2)(1).a)
+        [0.0, 1.0,
+         0.0, 2.0]
+        >>> l = Layer((2,2), [1.0, 2.0, 3.0, 4.0])
+        >>> list(l.windows_fun(4)(0).a)
+        [0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 1.0, 2.0,
+         0.0, 0.0, 3.0, 4.0]
+        >>> list(l.windows_fun(4)(1).a)
+        [0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0,
+         0.0, 1.0, 2.0, 0.0,
+         0.0, 3.0, 4.0, 0.0]
+        >>> list(l.windows_fun(4)(2).a)
+        [0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 1.0, 2.0,
+         0.0, 0.0, 3.0, 4.0,
+         0.0, 0.0, 0.0, 0.0]
+        >>> list(l.windows_fun(4)(3).a)
+        [0.0, 0.0, 0.0, 0.0,
+         0.0, 1.0, 2.0, 0.0,
+         0.0, 3.0, 4.0, 0.0,
+         0.0, 0.0, 0.0, 0.0]
+        '''
         size = (size/2)*2
         big = self.bigger((size/2, size/2))
         bsz = big.size[0]
         def gen(c):
-            y = c / bsz
-            x = c % bsz
-            return Layer((size, size),
-                         itertools.chain(*[big.a[x + bsz*yy : x + size + bsz*yy]
-                                           for yy in xrange(y, y+size)]))
+            y = c / self.size[0]
+            x = c % self.size[0]
+            rows = [big.a[x + bsz*yy : x + size + bsz*yy]
+                    for yy in xrange(y, y+size)]
+            return Layer((size, size), itertools.chain(*rows))
         return gen
 
 
@@ -84,3 +162,10 @@ def save(layers, filename):
                                   layers[2].to_image()))
     out.save(filename)
 
+
+
+if __name__ == '__main__':
+    import doctest_patch
+    import doctest
+    if doctest.testmod(optionflags=doctest_patch.EVAL_FLAG)[0] == 0:
+        print("all tests ok")
