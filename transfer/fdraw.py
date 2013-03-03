@@ -42,10 +42,11 @@ def main(argv):
 
         def save(fract):
             print "[ ] %.1f%%" % (fract*100.,)
-            layer.save([layers['R'],
-                        layers['GFP'],
-                        layers['DAPI']],
-                       prefix + '-network.png')
+            if False:
+                layer.save([layers['R'],
+                            layers['GFP'],
+                            layers['DAPI']],
+                           prefix + '-network.png')
             layer.save([layers['R'],
                         layers['R'],
                         layers['R']],

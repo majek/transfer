@@ -130,25 +130,16 @@ class Layer(object):
         '''
         size = (size/2)*2
         big = self.bigger((size/2, size/2))
-        bsz = big.size[0]
+        old_y = self.size[0]
+        new_y = big.size[0]
         def gen(c):
-            y = c / self.size[0]
-            x = c % self.size[0]
-            rows = [big.a[x + bsz*yy : x + size + bsz*yy]
+            y = c / old_y
+            x = c % old_y
+            rows = [big.a[x + new_y*yy : x + size + new_y*yy]
                     for yy in xrange(y, y+size)]
             return Layer((size, size), itertools.chain(*rows))
         return gen
 
-
-    def windows(self, size):
-        size = (size/2)*2
-        big = self.bigger((size/2, size/2))
-        bsz = big.size[0]
-        for x in xrange(big.size[0]-size):
-            for y in xrange(big.size[1]-size):
-                yield lambda: Layer((size, size),
-                    itertools.chain(*[big.a[x + bsz*yy : x + size + bsz*yy]
-                                         for yy in xrange(y, y+size)]))
 
     def delta(self, l):
         n = Layer(self.size)

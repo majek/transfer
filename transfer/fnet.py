@@ -32,7 +32,7 @@ class Network(object):
         num_hidden = self.window*self.window*2
         num_output = 1
 
-        self.net.create_standard_array((num_input, num_hidden, num_output))
+        self.net.create_standard_array((num_input, num_hidden, self.window, num_output))
         self.net.randomize_weights(-1., 1.)
         self._set_funs()
 
@@ -54,8 +54,8 @@ class Network(object):
         max_iterations = 80
         iterations_between_reports = 4
 
-        max_iterations = 100
-        iterations_between_reports = 10
+        max_iterations = 10
+        iterations_between_reports = 1
 
         sqe = self.sq_error()
         print "[.] sq_errorr=%.16f" % (sqe*1000.,)

@@ -28,14 +28,21 @@ def main(argv):
                         help='multiplier')
     parser.add_argument('--ratio', type=float, default=1.0,
                         help='ratio')
+    parser.add_argument('--type', default="ovalshade",
+                        help='type of output data [rect, oval, ovalshade]')
+    parser.add_argument('--save', default=False, type=bool,
+                        help='save intermediate images form')
     opts = parser.parse_args(argv)
+
+    assert opts.type in ['rect', 'oval', 'ovalshade']
 
     size = SIZE
     max_c = size[0] * size[1]
-    suffix = '%s_%.1f' % (opts.window, opts.multiplier)
+    suffix_window = '%s_%s_%.1f' % (opts.window, opts.type, opts.multiplier)
+    suffix_nowindow = '%s_%.1f' % (opts.type, opts.multiplier)
 
     if not opts.output:
-        opts.output = open('dataset_%s.pickle' % (suffix,), 'wb')
+        opts.output = open('dataset_%s.pickle' % (suffix_window,), 'wb')
 
 
     files = []
@@ -56,19 +63,26 @@ def main(argv):
         layers = loader.load_source(prefix + '-source.tif', size)
         results = result.load_results(prefix + '-output.tif', size)
         layers['T'] = result.results_to_rectangle_layer(size, results)
-        layers['R'] = result.results_to_layer(size, results, multiplier=opts.multiplier)
-        layer.save([layers['T'],
-                    layers['GFP'],
-                    layers['DAPI']],
-                   prefix + '-rect.png')
-        layer.save([layers['T'],
-                    layers['R'],
-                    layers['R']],
-                   prefix + '-resrect-' + suffix + '.png')
-        layer.save([layers['R'],
-                    layers['GFP'],
-                    layers['DAPI']],
-                   prefix + '-res-' + suffix + '.png')
+        layers['R'] = result.results_to_layer(size, results, opts.multiplier, opts.type)
+        if False:
+            layer.save([layer.Layer(size),
+                        layers['GFP'],
+                        layers['DAPI']],
+                       prefix + '-source.png')
+            layer.save([layers['T'],
+                        layers['GFP'],
+                        layers['DAPI']],
+                       prefix + '-rect.png')
+            layer.save([layers['R'],
+                        layers['GFP'],
+                        layers['DAPI']],
+                       prefix + '-res.png')
+
+        if opts.save:
+            layer.save([layers['R'],
+                        layers['R'],
+                        layers['R']],
+                       prefix + '-expected-' + suffix_nowindow + '.png')
 
         w1 = layers['GFP'].windows_fun(opts.window)
         w2 = layers['DAPI'].windows_fun(opts.window)
