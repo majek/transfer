@@ -80,8 +80,8 @@ def main(argv):
 
         if opts.save:
             layer.save([layers['R'],
-                        layers['R'],
-                        layers['R']],
+                        layers['GFP'],
+                        layers['DAPI']],
                        prefix + '-expected-' + suffix_nowindow + '.png')
 
         w1 = layers['GFP'].windows_fun(opts.window)
