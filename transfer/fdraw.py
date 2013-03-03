@@ -24,8 +24,8 @@ def main(argv):
     if not opts.network:
         opts.network = 'network.fann'
 
-    net = fnet.Network()
-    net.load(opts.network)
+    net = fnet.Network(opts.network)
+    net.load()
     size = net.size
     max_c = size[0] * size[1]
     window = net.window
@@ -38,7 +38,7 @@ def main(argv):
 
         if os.path.exists(prefix + '-output.tif'):
             results = result.load_results(prefix + '-output.tif', size)
-            layers['O'] = result.results_to_layer(size, results, multiplier=net.multiplier)
+            layers['O'] = result.results_to_layer(size, results, net.multiplier, type="oval")
 
         def save(fract):
             print "[ ] %.1f%%" % (fract*100.,)

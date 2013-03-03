@@ -5,3 +5,5 @@ PRATIO      = 3
 PMULTIPLIER = 5
 PSAMPLES    = 4
 PNETWORK    = 6
+PTYPE       = 7
+

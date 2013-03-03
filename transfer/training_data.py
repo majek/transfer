@@ -57,6 +57,7 @@ def main(argv):
     out.dump( (const.PWINDOW, opts.window) )
     out.dump( (const.PRATIO, opts.ratio) )
     out.dump( (const.PMULTIPLIER, opts.multiplier) )
+    out.dump( (const.PTYPE, opts.type) )
 
     for (name, prefix) in files:
         print "[.] Loading %r" % (prefix + '-source.tif',)

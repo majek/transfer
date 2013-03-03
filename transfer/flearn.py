@@ -15,21 +15,20 @@ def main(argv):
                         help='pickle input files', )
     parser.add_argument('--network',
                         help='loaded and saved network')
+    parser.add_argument('--error', type=float, default=0.0001,
+                        help='desired training error (default: 0.0001)')
+    parser.add_argument('--chunk', type=int, default=128,
+                        help='starting chunk size (default: 128)')
     opts = parser.parse_args(argv)
 
-    network_filename = 'network.fann'
-    if opts.network:
-        network_filename = opts.network
-
+    force_new = True
     if opts.network and os.path.exists(opts.network):
-        print "[+] Loading net from %r" % (opts.network,)
-        loadingfile = opts.network
-    else:
-        print "[+] No file %r" % (network_filename,)
-        loadingfile = None
+        force_new = False
 
+    if not opts.network:
+        opts.network = 'network.fann'
 
-    net = fnet.Network()
+    net = fnet.Network(opts.network)
 
     print "[ ] Loading training data set"
     for inputfile in opts.input:
@@ -47,18 +46,38 @@ def main(argv):
                 ratio = v[1]
             elif v[0] == const.PMULTIPLIER:
                 multiplier = v[1]
+            elif v[0] == const.PTYPE:
+                etype = v[1]
             elif v[0] == const.PSAMPLES:
                 for data, r in v[1]:
                     net.addSample(array.array('f', data), r)
             else:
                 x.FATAL('unknown key %r' % (v[0],))
-    net.preset(window, ratio, size, multiplier)
-    if not loadingfile:
+    net.preset(window, ratio, size, multiplier, etype)
+    if force_new:
+        print "[+] New network file %r" % (opts.network,)
         net.new()
     else:
-        net.load(loadingfile)
+        print "[+] Loading net from %r" % (opts.network,)
+        net.load()
 
-    print "[.] Training on %i datasets" % (len(net.samples),)
+    print "[.] Loaded %i samples" % (len(net.samples),)
 
-    net.train(network_filename)
+    print "[.] sq_errorr=%.16f" % (net.sq_error() * 1000.,)
+
+    try:
+        chunks =  min(opts.chunk, (len(net.samples) / 2)+1)
+        while chunks < len(net.samples):
+            chunks = min(chunks * 2, len(net.samples))
+            print "[*] Training set size %i" % (chunks,)
+            for chunk in net.build_datasets(chunks):
+                print "[*] *** New chunk"
+                net.train(chunk, opts.error)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        os.unlink(net.dataset_filename)
+
+    net.save()
+    print "[.] sq_errorr=%.16f" % (net.sq_error()*1000.,)
     print "[!] exit"
